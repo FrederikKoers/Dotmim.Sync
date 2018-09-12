@@ -50,8 +50,7 @@ namespace Dotmim.Sync.Tests
             {
                 AllowDBNull = true,
                 DbType = DbType.StringFixedLength,
-                MaxLength = 12,
-                DefaultValue = "EUROPE"
+                MaxLength = 12
             };
             FilterClause2 regionSqlFilter = new FilterClause2(region);
             regionSqlFilter.Filter("SalesLT.Product");
