@@ -27,7 +27,7 @@ namespace Dotmim.Sync.Tests
         {
 
             // App Veyor setup
-            if (IsOnAppVeyor)
+            if (IsOnAzureDev)
             {
                 SetupSql(providerFixture);
                 SetupMySql(providerFixture);
@@ -128,14 +128,12 @@ namespace Dotmim.Sync.Tests
 
             // 3) Add runs
             providerFixture.AddRun((ProviderType.Sql, NetworkType.Tcp),
-                    ProviderType.Sql |
-                    ProviderType.MySql |
-                    ProviderType.Sqlite);
+                    ProviderType.Sql );
 
-            providerFixture.AddRun((ProviderType.Sql, NetworkType.Http),
-                    ProviderType.Sql |
-                    ProviderType.MySql |
-                    ProviderType.Sqlite);
+            //providerFixture.AddRun((ProviderType.Sql, NetworkType.Http),
+            //        ProviderType.Sql |
+            //        ProviderType.MySql |
+            //        ProviderType.Sqlite);
 
 
         }
@@ -186,6 +184,20 @@ namespace Dotmim.Sync.Tests
             {
                 // check if we are running on appveyor or not
                 string isOnAppVeyor = Environment.GetEnvironmentVariable("APPVEYOR");
+                return !String.IsNullOrEmpty(isOnAppVeyor) && isOnAppVeyor.ToLowerInvariant() == "true";
+            }
+        }
+
+
+        /// <summary>
+        /// Gets if the tests are running on Azure
+        /// </summary>
+        internal static bool IsOnAzureDev
+        {
+            get
+            {
+                // check if we are running on appveyor or not
+                string isOnAppVeyor = Environment.GetEnvironmentVariable("AZUREDEV");
                 return !String.IsNullOrEmpty(isOnAppVeyor) && isOnAppVeyor.ToLowerInvariant() == "true";
             }
         }
@@ -301,8 +313,8 @@ namespace Dotmim.Sync.Tests
 
             var mySqlTables = new string[]
             {
-                "productcategory", "productmodel", "product", "employee", "customer", "address","customeraddress", "employeeaddress",
-                "salesorderheader", "salesorderdetail", "sql", "posts", "tags", "posttag"
+                "ProductCategory", "ProductModel", "Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
+                "SalesOrderHeader", "SalesOrderDetail", "Sql", "Posts", "Tags", "PostTag"
             };
 
             // 1) Add database name
@@ -389,13 +401,11 @@ namespace Dotmim.Sync.Tests
             // My SQL (disable http to go faster on app veyor)
             providerFixture.AddRun((ProviderType.MySql, NetworkType.Tcp),
                     ProviderType.Sql |
-                    ProviderType.MySql |
-                    ProviderType.Sqlite);
+                    ProviderType.MySql);
 
             providerFixture.AddRun((ProviderType.MySql, NetworkType.Http),
                     ProviderType.Sql |
-                    ProviderType.MySql |
-                    ProviderType.Sqlite);
+                    ProviderType.MySql);
         }
 
     }
