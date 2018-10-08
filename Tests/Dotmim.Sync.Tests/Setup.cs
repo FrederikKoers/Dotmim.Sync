@@ -68,59 +68,60 @@ namespace Dotmim.Sync.Tests
             pEmpId.AllowDBNull = true;
             pEmpId.DbType = DbType.Int16;
 
-            FilterClause2 customerFilter = new FilterClause2(pEmpId);
-            customerFilter.Filter("Customer")
-                          .On("EmployeeId");
-
-            FilterClause2 custAddFilter = new FilterClause2(pEmpId);
-            custAddFilter.Filter("CustomerAddress")
-                         .Join("Customer")
-                         .On("EmployeeId");
-
-            FilterClause2 addressFilter1 = new FilterClause2(pEmpId);
-            addressFilter1.Filter("Address")
-                         .Join("CustomerAddress")
-                         .Join("Customer")
-                         .On("EmployeeId");
-
-            FilterClause2 addressFilter2 = new FilterClause2(pEmpId);
-            addressFilter2.Filter("Address")
-                         .Join("EmployeeAddress")
-                         .On("EmployeeId");
-
             FilterClause2 employeeFilter = new FilterClause2(pEmpId);
             employeeFilter.Filter("Employee").On("EmployeeId");
 
-            FilterClause2 employeeAddressFilter = new FilterClause2(pEmpId);
-            employeeAddressFilter.Filter("EmployeeAddress").On("EmployeeId");
+            //FilterClause2 customerFilter = new FilterClause2(pEmpId);
+            //customerFilter.Filter("Customer")
+            //              .On("EmployeeId");
+
+            //FilterClause2 custAddFilter = new FilterClause2(pEmpId);
+            //custAddFilter.Filter("CustomerAddress")
+            //             .Join("Customer")
+            //             .On("EmployeeId");
+
+            //FilterClause2 addressFilter1 = new FilterClause2(pEmpId);
+            //addressFilter1.Filter("Address")
+            //             .Join("CustomerAddress")
+            //             .Join("Customer")
+            //             .On("EmployeeId");
+
+            //FilterClause2 addressFilter2 = new FilterClause2(pEmpId);
+            //addressFilter2.Filter("Address")
+            //             .Join("EmployeeAddress")
+            //             .On("EmployeeId");
 
 
-            FilterClause2 sohFilter = new FilterClause2(pEmpId);
-            sohFilter.Filter("SalesLT.SalesOrderHeader")
-                          .Join("Customer")
-                          .On("EmployeeId");
+            //FilterClause2 employeeAddressFilter = new FilterClause2(pEmpId);
+            //employeeAddressFilter.Filter("EmployeeAddress").On("EmployeeId");
 
-            FilterClause2 sodFilter = new FilterClause2(pEmpId);
-            // then we add the filter table and its column
-            sodFilter.Filter("SalesLT.SalesOrderDetail")
-                          .Join("SalesLT.SalesOrderHeader")
-                          .Join("Customer")
-                          .On("EmployeeId");
+
+            //FilterClause2 sohFilter = new FilterClause2(pEmpId);
+            //sohFilter.Filter("SalesLT.SalesOrderHeader")
+            //              .Join("Customer")
+            //              .On("EmployeeId");
+
+            //FilterClause2 sodFilter = new FilterClause2(pEmpId);
+            //// then we add the filter table and its column
+            //sodFilter.Filter("SalesLT.SalesOrderDetail")
+            //              .Join("SalesLT.SalesOrderHeader")
+            //              .Join("Customer")
+            //              .On("EmployeeId");
 
 
             // virtual filter on product
             providerFixture.AddFilter(ProviderType.Sql, regionSqlFilter);
             // employees                           
             providerFixture.AddFilter(ProviderType.Sql, employeeFilter);
-            providerFixture.AddFilter(ProviderType.Sql, employeeAddressFilter);
-            providerFixture.AddFilter(ProviderType.Sql, addressFilter2);
+            //providerFixture.AddFilter(ProviderType.Sql, employeeAddressFilter);
+            //providerFixture.AddFilter(ProviderType.Sql, addressFilter2);
             // customers                           
-            providerFixture.AddFilter(ProviderType.Sql, customerFilter);
-            providerFixture.AddFilter(ProviderType.Sql, custAddFilter);
-            providerFixture.AddFilter(ProviderType.Sql, addressFilter1);
+            //providerFixture.AddFilter(ProviderType.Sql, customerFilter);
+            //providerFixture.AddFilter(ProviderType.Sql, custAddFilter);
+            //providerFixture.AddFilter(ProviderType.Sql, addressFilter1);
             // sales orders                        
-            providerFixture.AddFilter(ProviderType.Sql, sohFilter);
-            providerFixture.AddFilter(ProviderType.Sql, sodFilter);
+            //providerFixture.AddFilter(ProviderType.Sql, sohFilter);
+            //providerFixture.AddFilter(ProviderType.Sql, sodFilter);
 
             // add the parameter for the client
             providerFixture.AddFilterParameter(ProviderType.Sql, new SyncParameter("empId", 1));
