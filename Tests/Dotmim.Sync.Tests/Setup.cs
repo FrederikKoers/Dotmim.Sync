@@ -1,6 +1,4 @@
-﻿using Dotmim.Sync.Data;
-using Dotmim.Sync.Filter;
-using Dotmim.Sync.Tests.Core;
+﻿using Dotmim.Sync.Tests.Core;
 using Dotmim.Sync.Tests.MySql;
 using Dotmim.Sync.Tests.SqlServer;
 using System;
@@ -9,8 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Data;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Linq;
 
 namespace Dotmim.Sync.Tests
 {
@@ -35,21 +31,24 @@ namespace Dotmim.Sync.Tests
             }
             var sqlTables = new string[]
             {
-               "SalesLT.ProductCategory", "SalesLT.ProductModel", "SalesLT.Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
-               "SalesLT.SalesOrderHeader", "SalesLT.SalesOrderDetail", "dbo.Sql", "Posts", "Tags", "PostTag"
+                "SalesLT.ProductCategory", "SalesLT.ProductModel", "SalesLT.Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
+                "SalesLT.SalesOrderHeader", "SalesLT.SalesOrderDetail", "dbo.Sql", "Posts", "Tags", "PostTag",
+                "PricesList", "PriceListCategory", "PriceListDetail"
             };
 
             var mySqlTables = new string[]
             {
-                "ProductCategory", "ProductModel", "Product", "Customer", "Address", "CustomerAddress",
-                "SalesOrderHeader", "SalesOrderDetail", "Sql", "Posts", "Tags", "PostTag"
+                "ProductCategory", "ProductModel", "Product", "Employee", "Customer", "Address", "CustomerAddress","EmployeeAddress",
+                "SalesOrderHeader", "SalesOrderDetail", "Sql", "Posts", "Tags", "PostTag",
+                "PricesList", "PriceListCategory", "PriceListDetail"
             };
 
             // 1) Add database name
             providerFixture.AddDatabaseName(ProviderType.Sql, "SqlAdventureWorks");
 
             // 2) Add tables
-            providerFixture.AddTables(ProviderType.Sql, sqlTables);
+            providerFixture.AddTables(ProviderType.Sql, sqlTables, 109);
+            providerFixture.AddTables(ProviderType.MySql, mySqlTables, 109);
 
 
             // 3) Add filters
@@ -170,8 +169,7 @@ namespace Dotmim.Sync.Tests
             else if (IsOnAzureDev)
                 cs = $@"Server=127.0.0.1; Port=3307; Database={dbName}; Uid=root; Pwd=Password12!";
             else
-                cs = $@"Server=127.0.0.1; Port=3306; Database={dbName}; Uid=root; Pwd=azerty31$";
-            //cs = $@"Server=127.0.0.1; Port=3307; Database={dbName}; Uid=root; Pwd=Password12!";
+                cs = $@"Server=127.0.0.1; Port=3306; Database={dbName}; Uid=root; Pwd=Password12!";
 
             return cs;
         }
