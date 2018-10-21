@@ -1,10 +1,7 @@
-﻿using Dotmim.Sync.Tests.Core;
-using Dotmim.Sync.Tests.MySql;
-using Dotmim.Sync.Tests.SqlServer;
+﻿using Dotmim.Sync.Data;
+using Dotmim.Sync.Filter;
+using Dotmim.Sync.Tests.Core;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Data;
 using System.Runtime.InteropServices;
 
@@ -29,16 +26,22 @@ namespace Dotmim.Sync.Tests
                 SetupMySql(providerFixture);
                 return;
             }
+
+            //var sqlTables = new string[]
+            //{
+            //    "SalesLT.ProductCategory", "SalesLT.ProductModel", "SalesLT.Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
+            //    "SalesLT.SalesOrderHeader", "SalesLT.SalesOrderDetail", "dbo.Sql", "Posts", "Tags", "PostTag",
+            //    "PricesList", "PriceListCategory", "PriceListDetail"
+            //};
+
             var sqlTables = new string[]
             {
-                "SalesLT.ProductCategory", "SalesLT.ProductModel", "SalesLT.Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
-                "SalesLT.SalesOrderHeader", "SalesLT.SalesOrderDetail", "dbo.Sql", "Posts", "Tags", "PostTag",
-                "PricesList", "PriceListCategory", "PriceListDetail"
+                "Region", "Employee", "Customer", "Address", "EmployeeAddress", "CustomerAddress"
             };
 
             var mySqlTables = new string[]
             {
-                "ProductCategory", "ProductModel", "Product", "Employee", "Customer", "Address", "CustomerAddress","EmployeeAddress",
+                "Region", "ProductCategory", "ProductModel", "Product", "Employee", "Customer", "Address", "CustomerAddress","EmployeeAddress",
                 "SalesOrderHeader", "SalesOrderDetail", "Sql", "Posts", "Tags", "PostTag",
                 "PricesList", "PriceListCategory", "PriceListDetail"
             };
@@ -48,27 +51,34 @@ namespace Dotmim.Sync.Tests
 
             // 2) Add tables
             providerFixture.AddTables(ProviderType.Sql, sqlTables, 109);
-            providerFixture.AddTables(ProviderType.MySql, mySqlTables, 109);
+            //providerFixture.AddTables(ProviderType.MySql, mySqlTables, 109);
 
 
             // 3) Add filters
 
             // virtual filter
-            var region = new DmColumn<String>("region")
+            //var region = new DmColumn<string>("region")
+            //{
+            //    AllowDBNull = true,
+            //    DbType = DbType.StringFixedLength,
+            //    MaxLength = 12
+            //};
+            //FilterClause2 regionSqlFilter = new FilterClause2(region);
+            //regionSqlFilter.Filter("SalesLT.Product");
+
+            var pEmpId = new DmColumn<string>("regionId")
             {
                 AllowDBNull = true,
-                DbType = DbType.StringFixedLength,
-                MaxLength = 12
+                DbType = DbType.String,
+                MaxLength = 10
             };
-            FilterClause2 regionSqlFilter = new FilterClause2(region);
-            regionSqlFilter.Filter("SalesLT.Product");
 
-            var pEmpId = new DmColumn<Int32>("empId");
-            pEmpId.AllowDBNull = true;
-            pEmpId.DbType = DbType.Int16;
+            var employeeFilter = new FilterClause2(pEmpId);
+            employeeFilter.Filter("Region").On("RegionId");
 
-            FilterClause2 employeeFilter = new FilterClause2(pEmpId);
-            employeeFilter.Filter("Employee").On("EmployeeId");
+            providerFixture.AddFilter(ProviderType.Sql, employeeFilter);
+
+
 
             //FilterClause2 customerFilter = new FilterClause2(pEmpId);
             //customerFilter.Filter("Customer")
@@ -109,10 +119,10 @@ namespace Dotmim.Sync.Tests
 
 
             // virtual filter on product
-            providerFixture.AddFilter(ProviderType.Sql, regionSqlFilter);
+            //providerFixture.AddFilter(ProviderType.Sql, regionSqlFilter);
             // employees                           
-            providerFixture.AddFilter(ProviderType.Sql, employeeFilter);
-            //providerFixture.AddFilter(ProviderType.Sql, employeeAddressFilter);
+            //providerFixture.AddFilter(ProviderType.Sql, employeeFilter);
+            ////providerFixture.AddFilter(ProviderType.Sql, employeeAddressFilter);
             //providerFixture.AddFilter(ProviderType.Sql, addressFilter2);
             // customers                           
             //providerFixture.AddFilter(ProviderType.Sql, customerFilter);
@@ -123,12 +133,12 @@ namespace Dotmim.Sync.Tests
             //providerFixture.AddFilter(ProviderType.Sql, sodFilter);
 
             // add the parameter for the client
-            providerFixture.AddFilterParameter(ProviderType.Sql, new SyncParameter("empId", 1));
+            providerFixture.AddFilterParameter(ProviderType.Sql, new SyncParameter("regionId", "NORTH"));
 
 
             // 3) Add runs
             providerFixture.AddRun((ProviderType.Sql, NetworkType.Tcp),
-                    ProviderType.Sql );
+                    ProviderType.Sql);
 
             //providerFixture.AddRun((ProviderType.Sql, NetworkType.Http),
             //        ProviderType.Sql |
@@ -142,10 +152,10 @@ namespace Dotmim.Sync.Tests
         /// Returns the database server to be used in the untittests - note that this is the connection to appveyor SQL Server 2016 instance!
         /// see: https://www.appveyor.com/docs/services-databases/#mysql
         /// </summary>
-        internal static String GetSqlDatabaseConnectionString(string dbName)
+        internal static string GetSqlDatabaseConnectionString(string dbName)
         {
             // check if we are running localy on windows or linux
-            bool isWindowsRuntime = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            var isWindowsRuntime = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             if (IsOnAppVeyor)
                 return $@"Server=(local)\SQL2016;Database={dbName};UID=sa;PWD=Password12!";
@@ -182,8 +192,8 @@ namespace Dotmim.Sync.Tests
             get
             {
                 // check if we are running on appveyor or not
-                string isOnAppVeyor = Environment.GetEnvironmentVariable("APPVEYOR");
-                return !String.IsNullOrEmpty(isOnAppVeyor) && isOnAppVeyor.ToLowerInvariant() == "true";
+                var isOnAppVeyor = Environment.GetEnvironmentVariable("APPVEYOR");
+                return !string.IsNullOrEmpty(isOnAppVeyor) && isOnAppVeyor.ToLowerInvariant() == "true";
             }
         }
 
@@ -196,8 +206,8 @@ namespace Dotmim.Sync.Tests
             get
             {
                 // check if we are running on appveyor or not
-                string isOnAppVeyor = Environment.GetEnvironmentVariable("AZUREDEV");
-                return !String.IsNullOrEmpty(isOnAppVeyor) && isOnAppVeyor.ToLowerInvariant() == "true";
+                var isOnAppVeyor = Environment.GetEnvironmentVariable("AZUREDEV");
+                return !string.IsNullOrEmpty(isOnAppVeyor) && isOnAppVeyor.ToLowerInvariant() == "true";
             }
         }
 
@@ -205,7 +215,7 @@ namespace Dotmim.Sync.Tests
         {
             var sqlTables = new string[]
             {
-                "SalesLT.ProductCategory", "SalesLT.ProductModel", "SalesLT.Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
+                "Region", "SalesLT.ProductCategory", "SalesLT.ProductModel", "SalesLT.Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
                 "SalesLT.SalesOrderHeader", "SalesLT.SalesOrderDetail", "dbo.Sql", "Posts", "Tags", "PostTag"
             };
 
@@ -214,59 +224,61 @@ namespace Dotmim.Sync.Tests
             providerFixture.AddDatabaseName(ProviderType.Sql, "SqlAdventureWorks");
 
             // 2) Add tables
-            providerFixture.AddTables(ProviderType.Sql, sqlTables);
+            providerFixture.AddTables(ProviderType.Sql, sqlTables, 84);
 
 
             // 3) Add filters
 
             // virtual filter
-            var region = new DmColumn<String>("region")
+            var region = new DmColumn<string>("region")
             {
                 AllowDBNull = true,
                 DbType = DbType.StringFixedLength,
                 MaxLength = 12,
                 DefaultValue = "EUROPE"
             };
-            FilterClause2 regionSqlFilter = new FilterClause2(region);
+            var regionSqlFilter = new FilterClause2(region);
             regionSqlFilter.Filter("SalesLT.Product");
 
-            var pEmpId = new DmColumn<Int32>("empId");
-            pEmpId.AllowDBNull = true;
-            pEmpId.DbType = DbType.Int16;
+            var pEmpId = new DmColumn<int>("empId")
+            {
+                AllowDBNull = true,
+                DbType = DbType.Int16
+            };
 
-            FilterClause2 customerFilter = new FilterClause2(pEmpId);
+            var customerFilter = new FilterClause2(pEmpId);
             customerFilter.Filter("Customer")
                           .On("EmployeeId");
 
-            FilterClause2 custAddFilter = new FilterClause2(pEmpId);
+            var custAddFilter = new FilterClause2(pEmpId);
             custAddFilter.Filter("CustomerAddress")
                          .Join("Customer")
                          .On("EmployeeId");
 
-            FilterClause2 addressFilter1 = new FilterClause2(pEmpId);
+            var addressFilter1 = new FilterClause2(pEmpId);
             addressFilter1.Filter("Address")
                          .Join("CustomerAddress")
                          .Join("Customer")
                          .On("EmployeeId");
 
-            FilterClause2 addressFilter2 = new FilterClause2(pEmpId);
+            var addressFilter2 = new FilterClause2(pEmpId);
             addressFilter2.Filter("Address")
                          .Join("EmployeeAddress")
                          .On("EmployeeId");
 
-            FilterClause2 employeeFilter = new FilterClause2(pEmpId);
+            var employeeFilter = new FilterClause2(pEmpId);
             employeeFilter.Filter("Employee").On("EmployeeId");
 
-            FilterClause2 employeeAddressFilter = new FilterClause2(pEmpId);
+            var employeeAddressFilter = new FilterClause2(pEmpId);
             employeeAddressFilter.Filter("EmployeeAddress").On("EmployeeId");
 
 
-            FilterClause2 sohFilter = new FilterClause2(pEmpId);
+            var sohFilter = new FilterClause2(pEmpId);
             sohFilter.Filter("SalesLT.SalesOrderHeader")
                           .Join("Customer")
                           .On("EmployeeId");
 
-            FilterClause2 sodFilter = new FilterClause2(pEmpId);
+            var sodFilter = new FilterClause2(pEmpId);
             // then we add the filter table and its column
             sodFilter.Filter("SalesLT.SalesOrderDetail")
                           .Join("SalesLT.SalesOrderHeader")
@@ -312,7 +324,7 @@ namespace Dotmim.Sync.Tests
 
             var mySqlTables = new string[]
             {
-                "ProductCategory", "ProductModel", "Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
+                "Region", "ProductCategory", "ProductModel", "Product", "Employee", "Customer", "Address", "CustomerAddress", "EmployeeAddress",
                 "SalesOrderHeader", "SalesOrderDetail", "Sql", "Posts", "Tags", "PostTag"
             };
 
@@ -320,60 +332,62 @@ namespace Dotmim.Sync.Tests
             providerFixture.AddDatabaseName(ProviderType.MySql, "mysqladventureworks");
 
             // 2) Add tables
-            providerFixture.AddTables(ProviderType.MySql, mySqlTables);
+            providerFixture.AddTables(ProviderType.MySql, mySqlTables, 84);
 
 
             // 3) Add filters
 
             // virtual filter
-            var region = new DmColumn<String>("region")
+            var region = new DmColumn<string>("region")
             {
                 AllowDBNull = true,
                 DbType = DbType.StringFixedLength,
                 MaxLength = 12,
                 DefaultValue = "EUROPE"
             };
-            FilterClause2 regionMySqlFilter = new FilterClause2(region);
+            var regionMySqlFilter = new FilterClause2(region);
             regionMySqlFilter.Filter("product");
 
 
-            var pEmpId = new DmColumn<Int32>("empId");
-            pEmpId.AllowDBNull = true;
-            pEmpId.DbType = DbType.Int16;
+            var pEmpId = new DmColumn<int>("empId")
+            {
+                AllowDBNull = true,
+                DbType = DbType.Int16
+            };
 
-            FilterClause2 customerFilter = new FilterClause2(pEmpId);
+            var customerFilter = new FilterClause2(pEmpId);
             customerFilter.Filter("Customer")
                           .On("EmployeeId");
 
-            FilterClause2 custAddFilter = new FilterClause2(pEmpId);
+            var custAddFilter = new FilterClause2(pEmpId);
             custAddFilter.Filter("CustomerAddress")
                          .Join("Customer")
                          .On("EmployeeId");
 
-            FilterClause2 addressFilter1 = new FilterClause2(pEmpId);
+            var addressFilter1 = new FilterClause2(pEmpId);
             addressFilter1.Filter("Address")
                          .Join("CustomerAddress")
                          .Join("Customer")
                          .On("EmployeeId");
 
-            FilterClause2 addressFilter2 = new FilterClause2(pEmpId);
+            var addressFilter2 = new FilterClause2(pEmpId);
             addressFilter2.Filter("Address")
                          .Join("EmployeeAddress")
                          .On("EmployeeId");
 
-            FilterClause2 employeeFilter = new FilterClause2(pEmpId);
+            var employeeFilter = new FilterClause2(pEmpId);
             employeeFilter.Filter("Employee").On("EmployeeId");
 
-            FilterClause2 employeeAddressFilter = new FilterClause2(pEmpId);
+            var employeeAddressFilter = new FilterClause2(pEmpId);
             employeeAddressFilter.Filter("EmployeeAddress").On("EmployeeId");
 
 
-            FilterClause2 sohFilter = new FilterClause2(pEmpId);
+            var sohFilter = new FilterClause2(pEmpId);
             sohFilter.Filter("SalesOrderHeader")
                           .Join("Customer")
                           .On("EmployeeId");
 
-            FilterClause2 sodFilter = new FilterClause2(pEmpId);
+            var sodFilter = new FilterClause2(pEmpId);
             sodFilter.Filter("SalesOrderDetail")
                           .Join("SalesOrderHeader")
                           .Join("Customer")
